@@ -1,0 +1,11 @@
+.env
+.venv/
+venv/
+node_modules/
+android/.gradle/
+android/build/
+android/app/build/
+data/
+*.jks
+*.keystore
+local.properties

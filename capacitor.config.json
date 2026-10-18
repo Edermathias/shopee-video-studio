@@ -1,0 +1,12 @@
+{
+  "appId": "br.com.edersantos.shopeevideostudio",
+  "appName": "Shopee Video Studio",
+  "webDir": "app/static",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
