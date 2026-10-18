@@ -1,0 +1,53 @@
+name: Build Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Configure server URL
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          if [ -z "$API_BASE_URL" ]; then
+            echo 'Configure Repository variable API_BASE_URL with your public HTTPS backend URL.'
+            exit 1
+          fi
+          API_BASE_URL="$API_BASE_URL" python - <<'PY'
+          import os
+          from pathlib import Path
+          url = os.environ['API_BASE_URL'].rstrip('/')
+          if not url.startswith('https://'):
+              raise SystemExit('API_BASE_URL must start with https://')
+          Path('app/static/config.js').write_text('window.SHOPEE_API_BASE = ' + repr(url) + ';\n')
+          PY
+      - name: Install dependencies and create Android project
+        run: |
+          npm install
+          npx cap add android
+          npx cap sync android
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shopee-Video-Studio-debug-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
